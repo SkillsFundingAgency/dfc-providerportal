@@ -1,0 +1,70 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentName": {
+      "type": "string",
+      "metadata": {
+        "description": "Short name of the environment. Used for the name of resources created"
+      }
+    }
+  },
+  "variables": {
+    "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/",
+    "appServicePrefix": "[concat('dfc-',toLower(parameters('environmentName')),'-providerportal-lars')]",
+    "cosmosDbName": "[concat(variables('appServicePrefix'),'-cdb')]",
+    "azureSearchName": "[concat(variables('appServicePrefix'),'-search')]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2017-05-10",
+      "name": "providerPortalCosmos",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('deploymentUrlBase'),'cosmos-db.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "cosmosDbName": {
+            "value": "[variables('cosmosDbName')]"
+          },
+          "cosmosDbType": {
+            "value": "GlobalDocumentDB"
+          },
+          "defaultConsistencyLevel": {
+            "value": "Eventual"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "providerPortalSearch",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('deploymentUrlBase'),'azure-search.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "azureSearchName": {
+            "value": "[variables('azureSearchName')]"
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "cosmosDbName": {
+      "type": "string",
+      "value": "[variables('cosmosDbName')]"
+    },
+    "azureSearchName": {
+      "type": "string",
+      "value": "[variables('azureSearchName')]"
+    }
+  }
+}
