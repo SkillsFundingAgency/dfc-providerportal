@@ -7,15 +7,59 @@
       "metadata": {
         "description": "Short name of the environment. Used for the name of resources created"
       }
+    },
+    "appServicePlanSize": {
+      "type": "string",
+      "defaultValue": "1",
+      "metadata": {
+          "description": "Size of the instances in the app service plan"
+      },
+      "allowedValues": [
+        "1",
+        "2",
+        "3"
+      ]
+    },
+    "appServicePlanInstances": {
+      "type": "int",
+      "defaultValue": 1,
+      "metadata": {
+          "description": "Number of instances in the app service plan"
+      }
     }
   },
   "variables": {
     "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/",
     "appServicePrefix": "[concat('dfc-',toLower(parameters('environmentName')),'-providerportal-lars')]",
+    "appServicePlanName": "[concat(variables('appServicePrefix'),'-asp')]",
+    "keyVaultName": "[concat(variables('appServicePrefix'),'-kv')]",
     "cosmosDbName": "[concat(variables('appServicePrefix'),'-cdb')]",
     "azureSearchName": "[concat(variables('appServicePrefix'),'-search')]"
   },
   "resources": [
+    {
+      "apiVersion": "2017-05-10",
+      "name": "providerPortalAppServicePlan",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('deploymentUrlBase'),'app-service-plan.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "appServicePlanName": {
+            "value": "[variables('appServicePlanName')]"
+          },
+          "aspSize": {
+            "value": "[parameters('appServicePlanSize')]"
+          },
+          "aspInstances": {
+            "value": "[parameters('appServicePlanInstances')]"
+          }
+        }
+      }
+    },
     {
       "apiVersion": "2017-05-10",
       "name": "providerPortalCosmos",
@@ -40,6 +84,21 @@
       }
     },
     {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2016-10-01",
+      "name": "[variables('keyVaultName')]",
+      "location": "[resourceGroup().location]",
+      "tags": {},
+      "properties": {
+        "tenantId": "[subscription().tenantId]",
+        "sku": {
+          "family": "A",
+          "name": "standard"
+        },
+        "accessPolicies": []
+      }
+    },
+    {
       "apiVersion": "2017-05-10",
       "name": "providerPortalSearch",
       "type": "Microsoft.Resources/deployments",
@@ -58,6 +117,14 @@
     }
   ],
   "outputs": {
+    "appServicePlanName": {
+      "type": "string",
+      "value": "[variables('appServicePlanName')]"
+    },
+    "keyVaultName": {
+      "type": "string",
+      "value": "[variables('keyVaultName')]"
+    },
     "cosmosDbName": {
       "type": "string",
       "value": "[variables('cosmosDbName')]"
