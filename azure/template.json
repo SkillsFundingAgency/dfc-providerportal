@@ -32,7 +32,7 @@
     "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/",
     "appServicePrefix": "[concat('dfc-',toLower(parameters('environmentName')),'-providerportal-lars')]",
     "appServicePlanName": "[concat(variables('appServicePrefix'),'-asp')]",
-    "keyVaultName": "[concat(variables('appServicePrefix'),'-kv')]",
+    "keyVaultName": "[concat('dfc',toLower(parameters('environmentName')),'providerportalkv')]",
     "cosmosDbName": "[concat(variables('appServicePrefix'),'-cdb')]",
     "azureSearchName": "[concat(variables('appServicePrefix'),'-search')]"
   },
