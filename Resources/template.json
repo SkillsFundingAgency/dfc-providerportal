@@ -2,10 +2,16 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "environmentName": {
+    "projectPrefix": {
       "type": "string",
       "metadata": {
-        "description": "Short name of the environment. Used for the name of resources created"
+        "description": "Prefix for all resources created for the project (except storage account, see below). Should be in the format dfc-env-proj"
+      }
+    },
+    "storageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the project storage account (as it follows a different naming convention)"
       }
     },
     "appServicePlanSize": {
@@ -30,11 +36,9 @@
   },
   "variables": {
     "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/",
-    "appServicePrefix": "[concat('dfc-',toLower(parameters('environmentName')),'-providerportal')]",
-    "appServicePlanName": "[concat(variables('appServicePrefix'),'-asp')]",
-    "keyVaultName": "[concat('dfc',toLower(parameters('environmentName')),'providerportalkv')]",
-    "cosmosDbName": "[concat(variables('appServicePrefix'),'-cdb')]",
-    "azureSearchName": "[concat(variables('appServicePrefix'),'-search')]"
+    "appServicePlanName": "[concat(parameters('projectPrefix'),'-asp')]",
+    "cosmosDbName": "[concat(parameters('projectPrefix'),'-cdb')]",
+    "azureSearchName": "[concat(parameters('projectPrefix'),'-sch')]"
   },
   "resources": [
     {
@@ -84,18 +88,20 @@
       }
     },
     {
-      "type": "Microsoft.KeyVault/vaults",
-      "apiVersion": "2016-10-01",
-      "name": "[variables('keyVaultName')]",
-      "location": "[resourceGroup().location]",
-      "tags": {},
+      "apiVersion": "2017-05-10",
+      "name": "providerPortalStorage",
+      "type": "Microsoft.Resources/deployments",
       "properties": {
-        "tenantId": "[subscription().tenantId]",
-        "sku": {
-          "family": "A",
-          "name": "standard"
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('deploymentUrlBase'),'storage-account-arm.json')]",
+          "contentVersion": "1.0.0.0"
         },
-        "accessPolicies": []
+        "parameters": {
+          "storageAccountName": {
+            "value": "[parameters('storageAccountName')]"
+          }
+        }
       }
     },
     {
@@ -117,13 +123,13 @@
     }
   ],
   "outputs": {
+    "storageConnectionString": {
+      "type": "string",
+      "value": "[reference('providerPortalStorage').outputs.storageConnectionString.value]"
+    },
     "appServicePlanName": {
       "type": "string",
       "value": "[variables('appServicePlanName')]"
-    },
-    "keyVaultName": {
-      "type": "string",
-      "value": "[variables('keyVaultName')]"
     },
     "cosmosDbName": {
       "type": "string",
