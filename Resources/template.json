@@ -37,7 +37,6 @@
   "variables": {
     "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/",
     "appServicePlanName": "[concat(parameters('projectPrefix'),'-asp')]",
-    "cosmosDbName": "[concat(parameters('projectPrefix'),'-cdb')]",
     "azureSearchName": "[concat(parameters('projectPrefix'),'-sch')]"
   },
   "resources": [
@@ -60,29 +59,6 @@
           },
           "aspInstances": {
             "value": "[parameters('appServicePlanInstances')]"
-          }
-        }
-      }
-    },
-    {
-      "apiVersion": "2017-05-10",
-      "name": "providerPortalCosmos",
-      "type": "Microsoft.Resources/deployments",
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[concat(variables('deploymentUrlBase'),'cosmos-db.json')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "cosmosDbName": {
-            "value": "[variables('cosmosDbName')]"
-          },
-          "cosmosDbType": {
-            "value": "GlobalDocumentDB"
-          },
-          "defaultConsistencyLevel": {
-            "value": "Eventual"
           }
         }
       }
@@ -130,10 +106,6 @@
     "appServicePlanName": {
       "type": "string",
       "value": "[variables('appServicePlanName')]"
-    },
-    "cosmosDbName": {
-      "type": "string",
-      "value": "[variables('cosmosDbName')]"
     },
     "azureSearchName": {
       "type": "string",
